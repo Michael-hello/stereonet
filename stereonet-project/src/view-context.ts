@@ -1,10 +1,12 @@
+import { EventBus } from "./events";
+
 export class ViewContext {
 
     view: '2D' | '3D';
     projection: 'equal-angle' | 'equal-area';
     features: IFeature[] = [];
 
-    constructor() {}
+    constructor(public bus: EventBus) {}
 
     init(element: HTMLButtonElement) {
         element.addEventListener('click', this.addFeature.bind(this));
@@ -50,7 +52,9 @@ export class ViewContext {
         while( strike > 360 ) strike -= 360;
         while( strike < 0 ) strike += 360;
 
-        this.features.push({ type, dip, strike });
+        let feature: IFeature = { type, dip, strike };
+        this.features.push(feature);
+        this.bus.publish('new-feature', feature);
     };
 
     radioInputChange(e: Event){
