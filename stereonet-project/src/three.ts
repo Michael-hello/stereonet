@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { IFeature } from './view-context';
+import { wrapAngle } from './helpers';
+import { degToRad } from 'three/src/math/MathUtils.js';
 
 
 export class ThreeContext {
@@ -20,13 +23,16 @@ export class ThreeContext {
 
     objects = [];
 
+    features: THREE.Group;
+    radius = 90;
+
     constructor(){}
 
 
     init() {
 
         this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-        this.camera.position.set( 50, 185, 540 );
+        this.camera.position.set( 50, 105, 540 );
         this.camera.lookAt( 0, 0, 0 );
     
         this.scene = new THREE.Scene();
@@ -62,8 +68,7 @@ export class ThreeContext {
         this.scene.add( directionalLight );
     
         //TO DO: remove hard coding of element IDs
-        let app = document.querySelector<HTMLDivElement>('#app');
-        let three = app.querySelector<HTMLDivElement>('#three');
+        let three = document.getElementById('three') as HTMLDivElement;
     
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
@@ -71,7 +76,7 @@ export class ThreeContext {
         three.appendChild( this.renderer.domElement );
 
         this.cameraControls = new OrbitControls( this.camera, this.renderer.domElement );
-        // this.cameraControls.addEventListener( 'change', () => console.log(this.camera.position));
+        this.cameraControls.addEventListener( 'change', () => console.log(this.camera.position));
         this.cameraControls.enabled = true;
     
         // document.addEventListener( 'pointermove', this.onPointerMove.bind(this) );
@@ -83,15 +88,52 @@ export class ThreeContext {
 
         this.setupStereonet();
 
+        this.features = new THREE.Group();
+        this.scene.add(this.features);
+
         this.renderer.setAnimationLoop( this.render.bind(this) );
     }
 
-    setupStereonet() { 
+    public addFeature(feature: IFeature) {
+
+        let azim = -degToRad(wrapAngle(feature.strike + 90));
+        let dip = degToRad(90 - feature.dip);
+
+        if(feature.type == 'plane') {
+            //TO DO: clip above stereonet?
+            let w = 2 * this.radius;
+            const geometry = new THREE.PlaneGeometry( w, w );
+            const material = new THREE.MeshBasicMaterial({ color: 'rgb(30, 30, 240)', side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+            const plane = new THREE.Mesh( geometry, material );
+
+            plane.rotateY(azim);
+            plane.rotateX(dip);
+
+            this.features.add(plane);
+        };
+
+        if( feature.type == 'point' ) {
+            let w = this.radius;
+            let points = [];
+            let material = new THREE.LineBasicMaterial({ color: 'rgb(30, 30, 240)' });
+            points.push( new THREE.Vector3(0, w, 0));
+            points.push( new THREE.Vector3(0, -w, 0));
+            let geometry = new THREE.BufferGeometry().setFromPoints( points );
+            let line = new THREE.Line( geometry, material );
+            // let azim = wrapAngle(feature.strike);
+
+            line.rotateY(azim);
+            line.rotateX(dip);
+            this.features.add(line);
+        };
+    };
+
+    private setupStereonet() { 
         const phiStart = 0;
         const phiEnd = Math.PI * 2;
         const thetaStart = 0;
         const thetaEnd = Math.PI / 2;
-        const radius = 90;
+        const radius = this.radius;
 
         //add sphere
         const geometry = new THREE.SphereGeometry( radius, 320, 160, phiStart, phiEnd, thetaStart, thetaEnd );
@@ -171,7 +213,7 @@ export class ThreeContext {
         };
     }
     
-    onWindowResize() {    
+    private onWindowResize() {    
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
     
@@ -179,7 +221,7 @@ export class ThreeContext {
         this.render();    
     }
     
-    onPointerMove( event ) {
+    private onPointerMove( event ) {
     
         this.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
     
@@ -198,7 +240,7 @@ export class ThreeContext {
         }    
     }
     
-    onPointerDown( event ) {
+    private onPointerDown( event ) {
     
         this.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
     
@@ -237,13 +279,13 @@ export class ThreeContext {
         }    
     }
     
-    onDocumentKeyDown( event ) {    
+    private onDocumentKeyDown( event ) {    
         switch ( event.keyCode ) {    
             case 16: this.isShiftDown = true; break;    
         }    
     }
     
-    onDocumentKeyUp( event ) {    
+    private onDocumentKeyUp( event ) {    
         switch ( event.keyCode ) {    
             case 16: this.isShiftDown = false; break;    
         }    
