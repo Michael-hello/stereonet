@@ -1,19 +1,14 @@
 import './style.css'
-// import { setupCounter } from './counter.ts'
-
 import { ThreeContext } from './three';
+import { ViewContext } from './view-context';
 
-// document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-//   <div>
-//     <p class="read-the-docs">
-//       wassup
-//     </p>
-//   </div>
-// `
 
-// setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
 
+const viewCtx = new ViewContext();
 const ctx = new ThreeContext();
 
+const button = document.querySelector<HTMLButtonElement>('#addFeature');
+
+viewCtx.init(button);
 ctx.init();
 ctx.render();

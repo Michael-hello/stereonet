@@ -61,6 +61,7 @@ export class ThreeContext {
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         this.scene.add( directionalLight );
     
+        //TO DO: remove hard coding of element IDs
         let app = document.querySelector<HTMLDivElement>('#app');
         let three = app.querySelector<HTMLDivElement>('#three');
     
@@ -161,13 +162,10 @@ export class ThreeContext {
 
                 let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
                 const semi = new THREE.Line( lineGeo, x == 0 ? lineMat : thinLineMat );
-                let angle = (Math.PI / 180) * (2* x + 10 * i);
+                // let angle = (Math.PI / 180) * (2* x + 10 * i);
                 semi.rotateZ(-Math.PI/2)
                 semi.rotateX(Math.PI/2);
                 semi.translateY(a < total / 2 ? -r2 : r2);
-                
-                console.log(r2.toFixed(2), a, r.toFixed(2), total)
-
                 this.scene.add(semi);
             };
         };
