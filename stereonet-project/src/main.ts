@@ -16,6 +16,12 @@ threeCtx.init();
 threeCtx.render();
 
 bus.subscribe('new-feature', (x: IFeature) => {
-    console.log('new feature yoo', x);
     threeCtx.addFeature(x);
+});
+
+bus.subscribe('view-change', (x: any) => {
+    let { view, projection } = x;
+    threeCtx.view = view;
+    threeCtx.projection = projection;
+    threeCtx.updateView();
 });

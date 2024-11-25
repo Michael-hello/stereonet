@@ -11,7 +11,7 @@ export class ViewContext {
     init(element: HTMLButtonElement) {
         element.addEventListener('click', this.addFeature.bind(this));
         this.view = '3D';
-        this.projection = 'equal-area';
+        this.projection = 'equal-angle';
 
         const input3D = document.getElementById("3D") as HTMLInputElement;
         const input2D = document.getElementById("2D") as HTMLInputElement;
@@ -21,7 +21,7 @@ export class ViewContext {
         input3D.checked = true;
         input2D.checked = false;
         inputAngle.checked = false;
-        inputArea.checked = true;
+        inputArea.checked = false;
 
         input3D.addEventListener('change', this.radioInputChange.bind(this));
         input2D.addEventListener('change', this.radioInputChange.bind(this));
@@ -29,7 +29,7 @@ export class ViewContext {
         inputArea.addEventListener('change', this.radioInputChange.bind(this)); 
     };
 
-    addFeature() {
+    private addFeature() {
         const inputType = document.getElementById("type") as HTMLInputElement;
         const inputDip = document.getElementById("dip") as HTMLInputElement;
         const inputStrike = document.getElementById("strike") as HTMLInputElement;
@@ -54,10 +54,11 @@ export class ViewContext {
 
         let feature: IFeature = { type, dip, strike };
         this.features.push(feature);
+
         this.bus.publish('new-feature', feature);
     };
 
-    radioInputChange(e: Event){
+    private radioInputChange(e: Event){
         let target = e.target as HTMLInputElement;
         if( target == null ) return;
 
@@ -71,6 +72,8 @@ export class ViewContext {
         if(name == 'projection' && id == 'area' && checked) this.projection = 'equal-area'
         if(name == 'view' && id == '3D' && checked) this.view = '3D';
         if(name == 'view' && id == '2D' && checked) this.view = '2D';
+
+        this.bus.publish('view-change', { view: this.view, projection: this.projection })
     };
 
 };

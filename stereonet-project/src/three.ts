@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { IFeature } from './view-context';
-import { wrapAngle } from './helpers';
-import { degToRad } from 'three/src/math/MathUtils.js';
+import { wrapAngle, degreeToRad } from './helpers';
 
 
 export class ThreeContext {
@@ -26,15 +25,19 @@ export class ThreeContext {
     features: THREE.Group;
     radius = 90;
 
+    view: '2D' | '3D' = '3D';
+    projection: 'equal-angle' | 'equal-area';
+
     constructor(){}
 
 
     init() {
+        //TO DO: remove hard coding of element IDs
+        let container = document.getElementById('three') as HTMLDivElement;
+        let canvasWidth = container.clientWidth;
+        let canvasHeight = container.clientHeight;
 
-        this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-        this.camera.position.set( 50, 105, 540 );
-        this.camera.lookAt( 0, 0, 0 );
-    
+        this.camera = new THREE.PerspectiveCamera( 45, canvasWidth / canvasHeight, 1, 10000 );   
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0xf0f0f0 );
         
@@ -67,16 +70,13 @@ export class ThreeContext {
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         this.scene.add( directionalLight );
     
-        //TO DO: remove hard coding of element IDs
-        let three = document.getElementById('three') as HTMLDivElement;
-    
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
-        this.renderer.setSize( window.innerWidth, window.innerHeight );
-        three.appendChild( this.renderer.domElement );
+        this.renderer.setSize( canvasWidth, canvasHeight );
+        container.appendChild( this.renderer.domElement );
 
         this.cameraControls = new OrbitControls( this.camera, this.renderer.domElement );
-        this.cameraControls.addEventListener( 'change', () => console.log(this.camera.position));
+        this.cameraControls.addEventListener( 'change', () => this.cameraChange());
         this.cameraControls.enabled = true;
     
         // document.addEventListener( 'pointermove', this.onPointerMove.bind(this) );
@@ -90,14 +90,15 @@ export class ThreeContext {
 
         this.features = new THREE.Group();
         this.scene.add(this.features);
+        this.updateView();
 
         this.renderer.setAnimationLoop( this.render.bind(this) );
-    }
+    };
 
     public addFeature(feature: IFeature) {
 
-        let azim = -degToRad(wrapAngle(feature.strike + 90));
-        let dip = degToRad(90 - feature.dip);
+        let azim = -degreeToRad(wrapAngle(feature.strike + 90));
+        let dip = degreeToRad(90 - feature.dip);
 
         if(feature.type == 'plane') {
             //TO DO: clip above stereonet?
@@ -126,6 +127,27 @@ export class ThreeContext {
             line.rotateX(dip);
             this.features.add(line);
         };
+    };
+
+    public updateView() {
+        if( this.view == '2D' ) {            
+            this.cameraControls.enabled = false;
+            let h  = (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
+            this.camera.position.set( 0, h, 0 );
+            this.camera.lookAt( 0, 0, 0 );
+        }else {
+            this.cameraControls.enabled = true;
+            let h  = 0.75 * (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
+            this.camera.position.set( -h, h, h );
+            this.camera.lookAt( 0, 0, 0 );
+        }
+        this.render();
+
+        //TO DO: add support for different projections
+    };
+
+    private cameraChange() {
+        // console.log(this.camera.position);
     };
 
     private setupStereonet() { 
@@ -213,11 +235,15 @@ export class ThreeContext {
         };
     }
     
-    private onWindowResize() {    
-        this.camera.aspect = window.innerWidth / window.innerHeight;
+    private onWindowResize() {  
+        let container = document.getElementById('three') as HTMLDivElement;
+        let canvasWidth = container.clientWidth;
+        let canvasHeight = container.clientHeight;
+
+        this.camera.aspect = canvasWidth / canvasHeight;
         this.camera.updateProjectionMatrix();
     
-        this.renderer.setSize( window.innerWidth, window.innerHeight );    
+        this.renderer.setSize( canvasWidth, canvasHeight );    
         this.render();    
     }
     

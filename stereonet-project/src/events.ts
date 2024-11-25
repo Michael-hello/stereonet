@@ -38,6 +38,6 @@ export class EventBus {
     }
 };
 
-export type Events = 'new-feature' | 'delete-feature';
+export type Events = 'new-feature' | 'delete-feature' | 'view-change';
 
 
