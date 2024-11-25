@@ -62,9 +62,9 @@ export class ThreeContext implements IViewOptions {
     
         window.addEventListener( 'resize', this.onWindowResize.bind(this) ); 
 
-        this.setupStereonet();
         this.features3D = new THREE.Group();
         this.features2D = new THREE.Group();
+        this.setupStereonet();
         this.updateView(options);
 
         this.renderer.setAnimationLoop( this.render.bind(this) );
@@ -104,7 +104,7 @@ export class ThreeContext implements IViewOptions {
         };
 
         if( feature.type == 'point' ) {
-            let w = this.radius / 50;
+            let w = this.radius / 75;
             let geometry = new THREE.CircleGeometry( w, 32 ); 
             let material = new THREE.MeshBasicMaterial( { color: 'rgb(30, 30, 240)', side: THREE.DoubleSide, transparent: false } ); 
             let circle = new THREE.Mesh( geometry, material );
@@ -121,9 +121,15 @@ export class ThreeContext implements IViewOptions {
 
             const aabb = new THREE.Box3().setFromObject(line);
             let obb = new OBB();
-            obb = obb.fromBox3(aabb);            
-
+            obb = obb.fromBox3(aabb);          
             circle.position.set(obb.center.x*2, obb.center.y*2, obb.center.z*2);
+
+            /** this scaling forces all circles to appear the same size regardless of distance from the camera */
+            let width = 2 * Math.tan(degreeToRad(this.camera.fov/2)) * ( circle.position.y + this.camera.position.y );
+            let width2 = 2 * Math.tan(degreeToRad(this.camera.fov/2)) * ( this.radius + this.camera.position.y );
+            let scale = 1 / (width / width2);
+            circle.scale.set(scale, scale, 1);
+
             this.features2D.add(circle);
         };
     };
@@ -170,7 +176,7 @@ export class ThreeContext implements IViewOptions {
 
         if( this.view == '2D' ) {            
             this.cameraControls.enabled = false;
-            let h  = (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
+            let h  = (this.radius * 1.25) / Math.tan(degreeToRad(this.camera.fov / 2));
             this.camera.position.set( 0, h, 0 );
             this.camera.lookAt( 0, 0, 0 );
             this.scene2D.add(this.features2D);
@@ -178,7 +184,7 @@ export class ThreeContext implements IViewOptions {
 
         }else if( this.view == '3D' ){
             this.cameraControls.enabled = true;
-            let h  = 0.75 * (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
+            let h  = 0.75 * (this.radius * 1.25) / Math.tan(degreeToRad(this.camera.fov / 2));
             this.camera.position.set( -h, h, h );
             this.camera.lookAt( 0, 0, 0 );
             this.scene.add(this.features3D);
@@ -193,27 +199,14 @@ export class ThreeContext implements IViewOptions {
     private setupStereonet() { 
 
         const radius = this.radius;
+        const thickLineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.1, 0.1, 0.1), transparent: false, linewidth: 10 } );
         const lineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.35, 0.35, 0.35), transparent: false } );
         const thinLineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.6, 0.6, 0.6), transparent: false } );
-
-        //add circle
-        let points = [];
-        let count = this.resolution;
-
-        for(let i = 0; i < count; i++) {
-            let theta = i * ((2*Math.PI) / count);
-            let y =  -radius * Math.cos(theta);
-            let x = radius * Math.sin(theta);
-            points.push( new THREE.Vector3( x, 0, y ) );
-        };
-
-        let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
-        let circle = new THREE.Line( lineGeo, lineMat );
-        this.scene.add(circle);
 
         //add semi-circles
         let semiCount = 17;
         let total = (1 + semiCount) * 5;
+        let count = this.resolution;
 
         for(let i = 0; i <= semiCount; i++) {
 
@@ -260,6 +253,24 @@ export class ThreeContext implements IViewOptions {
                 this.scene.add(semi);
             };
         };
+
+        //add main circle
+        let points = [];
+ 
+         for(let i = 0; i <= count; i++) {
+             let theta = i * ((2*Math.PI) / count);
+             let y =  -radius * Math.cos(theta);
+             let x = radius * Math.sin(theta);
+             points.push( new THREE.Vector3( x, 0, y ) );
+         };
+ 
+         let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
+         let circle = new THREE.Line( lineGeo, thickLineMat );
+         circle.translateY(0.1);
+         this.scene.add(circle);
+
+         //add text
+
     };
     
     private onWindowResize() {  
