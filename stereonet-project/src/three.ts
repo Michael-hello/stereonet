@@ -9,19 +9,9 @@ export class ThreeContext {
     camera: THREE.PerspectiveCamera; 
     cameraControls: OrbitControls;
     scene: THREE.Scene; 
-    renderer: THREE.WebGLRenderer;
-    plane: THREE.Mesh;
-    pointer: THREE.Vector2; 
+    renderer: THREE.WebGLRenderer;    
     raycaster: THREE.Raycaster; 
-    isShiftDown = false;
-
-    rollOverMesh: THREE.Mesh; 
-    rollOverMaterial: THREE.MeshBasicMaterial;
-    cubeGeo: THREE.BoxGeometry; 
-    cubeMaterial: THREE.MeshLambertMaterial;
-
-    objects = [];
-
+  
     features: THREE.Group;
     radius = 90;
 
@@ -39,30 +29,13 @@ export class ThreeContext {
 
         this.camera = new THREE.PerspectiveCamera( 45, canvasWidth / canvasHeight, 1, 10000 );   
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0xf0f0f0 );
-        
-        const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-        this.rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
-        this.rollOverMesh = new THREE.Mesh( rollOverGeo, this.rollOverMaterial );
-        // this.scene.add( this.rollOverMesh );
-    
-        this.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
-        this.cubeMaterial = new THREE.MeshLambertMaterial( { color: 'pink', opacity: 0.6 } );
-    
+        this.scene.background = new THREE.Color( 0xf0f0f0 );       
+ 
         this.scene.add( new THREE.AxesHelper( 50 ) );
-        const gridHelper = new THREE.GridHelper( 1000, 20 );
+        // const gridHelper = new THREE.GridHelper( 1000, 20 );
         // this.scene.add( gridHelper );
     
         this.raycaster = new THREE.Raycaster();
-        this.pointer = new THREE.Vector2();
-    
-        const geometry = new THREE.PlaneGeometry( 1000, 1000 );
-        geometry.rotateX( - Math.PI / 2 );
-    
-        this.plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
-        this.scene.add( this.plane );    
-        this.objects.push( this.plane );
-    
         const ambientLight = new THREE.AmbientLight( 0x606060, 3 );
         this.scene.add( ambientLight );
     
@@ -79,15 +52,9 @@ export class ThreeContext {
         this.cameraControls.addEventListener( 'change', () => this.cameraChange());
         this.cameraControls.enabled = true;
     
-        // document.addEventListener( 'pointermove', this.onPointerMove.bind(this) );
-        // document.addEventListener( 'pointerdown', this.onPointerDown.bind(this) );
-        // document.addEventListener( 'keydown', this.onDocumentKeyDown.bind(this) );
-        // document.addEventListener( 'keyup', this.onDocumentKeyUp.bind(this) );
-    
         window.addEventListener( 'resize', this.onWindowResize.bind(this) ); 
 
         this.setupStereonet();
-
         this.features = new THREE.Group();
         this.scene.add(this.features);
         this.updateView();
@@ -121,7 +88,6 @@ export class ThreeContext {
             points.push( new THREE.Vector3(0, -w, 0));
             let geometry = new THREE.BufferGeometry().setFromPoints( points );
             let line = new THREE.Line( geometry, material );
-            // let azim = wrapAngle(feature.strike);
 
             line.rotateY(azim);
             line.rotateX(dip);
@@ -130,6 +96,8 @@ export class ThreeContext {
     };
 
     public updateView() {
+        //TO DO: add support for different projections
+
         if( this.view == '2D' ) {            
             this.cameraControls.enabled = false;
             let h  = (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
@@ -142,12 +110,9 @@ export class ThreeContext {
             this.camera.lookAt( 0, 0, 0 );
         }
         this.render();
-
-        //TO DO: add support for different projections
     };
 
     private cameraChange() {
-        // console.log(this.camera.position);
     };
 
     private setupStereonet() { 
@@ -162,7 +127,6 @@ export class ThreeContext {
         const material = new THREE.MeshBasicMaterial( { color: 0x9900ff, wireframe: false, side:THREE.DoubleSide, opacity: 0.3, transparent: true } );
         const sphere = new THREE.Mesh( geometry, material );
         sphere.rotateX(Math.PI)
-        // this.scene.add( sphere );
 
         const lineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.35, 0.35, 0.35) } );
         const thinLineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.6, 0.6, 0.6) } );
@@ -215,7 +179,6 @@ export class ThreeContext {
                 let topR = Math.abs(a - (total/2))
                 let r2 = radius * (1 -  (topR / (total/2)));
                 let r = Math.sqrt( Math.pow(radius, 2) - Math.pow(r2, 2) );
-                // if(x > 0 && (r2 / r > 0.95)) continue;
 
                 for(let j = 0; j < count/2; j++) {
                     let theta = j * ((2*Math.PI) / count);
@@ -226,14 +189,13 @@ export class ThreeContext {
 
                 let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
                 const semi = new THREE.Line( lineGeo, x == 0 ? lineMat : thinLineMat );
-                // let angle = (Math.PI / 180) * (2* x + 10 * i);
                 semi.rotateZ(-Math.PI/2)
                 semi.rotateX(Math.PI/2);
                 semi.translateY(a < total / 2 ? -r2 : r2);
                 this.scene.add(semi);
             };
         };
-    }
+    };
     
     private onWindowResize() {  
         let container = document.getElementById('three') as HTMLDivElement;
@@ -245,81 +207,11 @@ export class ThreeContext {
     
         this.renderer.setSize( canvasWidth, canvasHeight );    
         this.render();    
-    }
-    
-    private onPointerMove( event ) {
-    
-        this.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-    
-        this.raycaster.setFromCamera( this.pointer, this.camera );
-    
-        const intersects = this.raycaster.intersectObjects( this.objects, false );
-    
-        if ( intersects.length > 0 ) {
-    
-            const intersect = intersects[ 0 ];
-    
-            this.rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-            this.rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-    
-            this.render();    
-        }    
-    }
-    
-    private onPointerDown( event ) {
-    
-        this.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-    
-        this.raycaster.setFromCamera( this.pointer, this.camera );
-    
-        const intersects = this.raycaster.intersectObjects( this.objects, false );
-    
-        if ( intersects.length > 0 ) {
-    
-            const intersect = intersects[ 0 ];
-    
-            // delete cube
-    
-            if ( this.isShiftDown ) {
-    
-                if ( intersect.object !== this.plane ) {
-    
-                    this.scene.remove( intersect.object );
-    
-                    this.objects.splice( this.objects.indexOf( intersect.object ), 1 );    
-                }
-    
-                // create cube
-    
-            } else {
-    
-                const voxel = new THREE.Mesh( this.cubeGeo, this.cubeMaterial );
-                voxel.position.copy( intersect.point ).add( intersect.face.normal );
-                voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-                this.scene.add( voxel );
-    
-                this.objects.push( voxel );    
-            }
-    
-            this.render();    
-        }    
-    }
-    
-    private onDocumentKeyDown( event ) {    
-        switch ( event.keyCode ) {    
-            case 16: this.isShiftDown = true; break;    
-        }    
-    }
-    
-    private onDocumentKeyUp( event ) {    
-        switch ( event.keyCode ) {    
-            case 16: this.isShiftDown = false; break;    
-        }    
-    }
+    }       
     
     render() {    
         this.renderer.render( this.scene, this.camera );
-    }
+    };
 };
 
 
