@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { IFeature } from './view-context';
+import { IFeature, IViewOptions } from './view-context';
 import { wrapAngle, degreeToRad } from './helpers';
 import { OBB } from 'three/examples/jsm/math/OBB.js';
 
-export class ThreeContext {
+export class ThreeContext implements IViewOptions {
 
     camera: THREE.PerspectiveCamera; 
     cameraControls: OrbitControls;
@@ -19,13 +19,16 @@ export class ThreeContext {
 
     features: IFeature[] = [];
 
-    view: '2D' | '3D' = '3D';
-    projection: 'equal-angle' | 'equal-area';
+    get view() { return this._view }
+    get projection() { return this._projection }
+
+    private _view: '2D' | '3D';
+    private _projection: 'equal-angle' | 'equal-area';
 
     constructor(){}
 
 
-    init() {
+    init(options: IViewOptions) {
         //TO DO: remove hard coding of element IDs
         let container = document.getElementById('three') as HTMLDivElement;
         let canvasWidth = container.clientWidth;
@@ -35,7 +38,7 @@ export class ThreeContext {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0xf0f0f0 );       
  
-        this.scene.add( new THREE.AxesHelper( 50 ) );
+        // this.scene.add( new THREE.AxesHelper( 50 ) );
         // const gridHelper = new THREE.GridHelper( 1000, 20 );
         // this.scene.add( gridHelper );
     
@@ -61,7 +64,7 @@ export class ThreeContext {
         this.setupStereonet();
         this.features3D = new THREE.Group();
         this.features2D = new THREE.Group();
-        this.updateView();
+        this.updateView(options);
 
         this.renderer.setAnimationLoop( this.render.bind(this) );
     };
@@ -75,7 +78,7 @@ export class ThreeContext {
 
     private add2DFeature(feature: IFeature) {
 
-        let material = new THREE.LineBasicMaterial({ color: 'rgb(30, 30, 240)' });
+        let material = new THREE.LineBasicMaterial({ color: 'rgb(30, 30, 240)', transparent: false });
         let azim = -degreeToRad(wrapAngle(feature.strike));
         let dip = degreeToRad(feature.dip);
 
@@ -95,14 +98,14 @@ export class ThreeContext {
             let semi = new THREE.Line( lineGeo, material );
             semi.rotateY(azim);
             semi.rotateZ(-dip);
-     
+
             this.features2D.add(semi);
         };
 
         if( feature.type == 'point' ) {
             let w = this.radius / 50;
             let geometry = new THREE.CircleGeometry( w, 32 ); 
-            let material = new THREE.MeshBasicMaterial( { color: 'rgb(30, 30, 240)', side: THREE.DoubleSide } ); 
+            let material = new THREE.MeshBasicMaterial( { color: 'rgb(30, 30, 240)', side: THREE.DoubleSide, transparent: false } ); 
             let circle = new THREE.Mesh( geometry, material );
             circle.rotateX(Math.PI / 2);
 
@@ -120,7 +123,6 @@ export class ThreeContext {
             obb = obb.fromBox3(aabb);            
 
             circle.position.set(obb.center.x*2, obb.center.y*2, obb.center.z*2);
-            circle.translateZ(-1); //allow circle to sit above stereonet mesh
             this.features2D.add(circle);
         };
     };
@@ -159,8 +161,11 @@ export class ThreeContext {
         };
     };
 
-    public updateView() {
-        //TO DO: add support for different projections
+    //TO DO: add support for different projections
+    public updateView(options: IViewOptions) {
+
+        this._view = options.view;
+        this._projection = options.projection;
 
         if( this.view == '2D' ) {            
             this.cameraControls.enabled = false;
@@ -187,8 +192,8 @@ export class ThreeContext {
     private setupStereonet() { 
 
         const radius = this.radius;
-        const lineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.35, 0.35, 0.35) } );
-        const thinLineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.6, 0.6, 0.6) } );
+        const lineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.35, 0.35, 0.35), transparent: false } );
+        const thinLineMat = new THREE.LineBasicMaterial( { color: new THREE.Color(0.6, 0.6, 0.6), transparent: false } );
 
         //add circle
         let points = [];
