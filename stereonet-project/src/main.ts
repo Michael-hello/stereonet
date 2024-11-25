@@ -24,7 +24,15 @@ bus.subscribe('view-change', (x: IViewOptions) => {
 });
 
 // adds some example data
-threeCtx.addFeature({ type: 'plane', dip: 40, strike: 180 });
-threeCtx.addFeature({ type: 'point', dip: 85, strike: 180 });
+threeCtx.addFeature({ type: 'plane', dip: 40, strike: 83 });
+threeCtx.addFeature({ type: 'plane', dip: 50, strike: 310 });
+threeCtx.addFeature({ type: 'plane', dip: 22, strike: 3 });
+threeCtx.addFeature({ type: 'plane', dip: 5, strike: 165 });
+threeCtx.addFeature({ type: 'plane', dip: 82, strike: 210 });
+
+threeCtx.addFeature({ type: 'point', dip: 85, strike: 40 });
+threeCtx.addFeature({ type: 'point', dip: 65, strike: 180 });
+threeCtx.addFeature({ type: 'point', dip: 25, strike: 220 });
+threeCtx.addFeature({ type: 'point', dip: 7, strike: 340 });
 
 

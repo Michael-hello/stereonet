@@ -9,6 +9,7 @@ export class ThreeContext implements IViewOptions {
     camera: THREE.PerspectiveCamera; 
     cameraControls: OrbitControls;
     scene: THREE.Scene; 
+    scene2D: THREE.Scene; //allows 2D features to render on top
     renderer: THREE.WebGLRenderer;    
     raycaster: THREE.Raycaster; 
   
@@ -27,16 +28,15 @@ export class ThreeContext implements IViewOptions {
 
     constructor(){}
 
-
     init(options: IViewOptions) {
-        //TO DO: remove hard coding of element IDs
         let container = document.getElementById('three') as HTMLDivElement;
         let canvasWidth = container.clientWidth;
         let canvasHeight = container.clientHeight;
 
         this.camera = new THREE.PerspectiveCamera( 45, canvasWidth / canvasHeight, 1, 10000 );   
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0xf0f0f0 );       
+        this.scene.background = new THREE.Color( 0xf0f0f0 );  
+        this.scene2D = new THREE.Scene();
  
         // this.scene.add( new THREE.AxesHelper( 50 ) );
         // const gridHelper = new THREE.GridHelper( 1000, 20 );
@@ -53,6 +53,7 @@ export class ThreeContext implements IViewOptions {
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize( canvasWidth, canvasHeight );
+        this.renderer.autoClear = false;
         container.appendChild( this.renderer.domElement );
 
         this.cameraControls = new OrbitControls( this.camera, this.renderer.domElement );
@@ -172,7 +173,7 @@ export class ThreeContext implements IViewOptions {
             let h  = (this.radius * 1.1) / Math.atan(degreeToRad(this.camera.fov / 2));
             this.camera.position.set( 0, h, 0 );
             this.camera.lookAt( 0, 0, 0 );
-            this.scene.add(this.features2D);
+            this.scene2D.add(this.features2D);
             this.scene.remove(this.features3D);
 
         }else if( this.view == '3D' ){
@@ -181,7 +182,7 @@ export class ThreeContext implements IViewOptions {
             this.camera.position.set( -h, h, h );
             this.camera.lookAt( 0, 0, 0 );
             this.scene.add(this.features3D);
-            this.scene.remove(this.features2D);
+            this.scene2D.remove(this.features2D);
         }
         this.render();
     };
@@ -273,8 +274,13 @@ export class ThreeContext implements IViewOptions {
         this.render();    
     }       
     
-    render() {    
+    render() {  
+        /** below code allows objects inside scene2D to be rendered on top, see:
+            https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs */  
+        this.renderer.clear();
         this.renderer.render( this.scene, this.camera );
+        this.renderer.clearDepth();
+        this.renderer.render( this.scene2D, this.camera );
     };
 };
 
