@@ -81,8 +81,8 @@ export class ViewContext {
 
 export interface IFeature {
     type: 'plane' | 'point';
-    dip: number;
-    strike: number; //strike defined by RH rule
+    dip: number; //degrees
+    strike: number; //strike defined by RH rule //degrees
 }
 
 
