@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { IFeature, IViewOptions } from './view-context';
 import { wrapAngle, degreeToRad } from './helpers';
 import { OBB } from 'three/examples/jsm/math/OBB.js';
+import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/Addons.js';
 
 export class ThreeContext implements IViewOptions {
 
@@ -10,11 +11,13 @@ export class ThreeContext implements IViewOptions {
     cameraControls: OrbitControls;
     scene: THREE.Scene; 
     scene2D: THREE.Scene; //allows 2D features to render on top
-    renderer: THREE.WebGLRenderer;    
+    renderer: THREE.WebGLRenderer;   
+    labelRenderer: CSS2DRenderer; 
     raycaster: THREE.Raycaster; 
   
     features3D: THREE.Group;
     features2D: THREE.Group;
+    labels: THREE.Object3D;
     radius = 90;
     resolution = 1000;
 
@@ -49,6 +52,9 @@ export class ThreeContext implements IViewOptions {
         const directionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
         directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
         this.scene.add( directionalLight );
+
+        this.labels = new THREE.Object3D();
+        this.scene2D.add(this.labels);
     
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
@@ -56,7 +62,17 @@ export class ThreeContext implements IViewOptions {
         this.renderer.autoClear = false;
         container.appendChild( this.renderer.domElement );
 
-        this.cameraControls = new OrbitControls( this.camera, this.renderer.domElement );
+        this.labelRenderer = new CSS2DRenderer();
+        this.labelRenderer.setSize( canvasWidth, canvasHeight );
+        this.labelRenderer.domElement.style.width = canvasWidth + 'px'
+        this.labelRenderer.domElement.style.height = canvasHeight + 'px'
+        this.labelRenderer.domElement.style.position = 'absolute';
+        this.labelRenderer.domElement.style.userSelect = 'none';
+        this.labelRenderer.domElement.style.margin = '0';
+        this.labelRenderer.domElement.style.top = '0';
+        container.appendChild( this.labelRenderer.domElement );
+
+        this.cameraControls = new OrbitControls( this.camera, this.labelRenderer.domElement );
         this.cameraControls.addEventListener( 'change', () => this.cameraChange());
         this.cameraControls.enabled = true;
     
@@ -189,7 +205,9 @@ export class ThreeContext implements IViewOptions {
             this.camera.lookAt( 0, 0, 0 );
             this.scene.add(this.features3D);
             this.scene2D.remove(this.features2D);
-        }
+        };
+
+        this.updateText();
         this.render();
     };
 
@@ -267,11 +285,36 @@ export class ThreeContext implements IViewOptions {
          let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
          let circle = new THREE.Line( lineGeo, thickLineMat );
          circle.translateY(0.1);
-         this.scene.add(circle);
-
-         //add text
-
+         this.scene.add(circle);       
     };
+
+    private updateText() {
+
+        this.labels.clear();
+        
+        if(this.view == '3D') return;
+
+        let r = 1.1 * this.radius;
+        let text: { text: string, x: number, y: number }[] = [ 
+            { text: 'N', x: 0, y: -r }, 
+            { text: 'E', x: 1.1*r, y: 0 }, 
+            { text: 'S', x: 0, y: r }, 
+            { text: 'W', x: -1.1*r, y: 0 } 
+        ];
+
+        for(let i = 0; i < text.length; i++) {
+            const moonDiv = document.createElement( 'div' );
+            moonDiv.textContent = `${text[i].text}`;
+            moonDiv.style.fontSize = '20px';
+            moonDiv.style.fontWeight = '400';
+            moonDiv.style.color = 'black';
+            let label = new CSS2DObject( moonDiv );
+            let x = text[i].x
+            let y = text[i].y;
+            label.position.set(x, 0, y);
+            this.labels.add(label);
+        };
+    }
     
     private onWindowResize() {  
         let container = document.getElementById('three') as HTMLDivElement;
@@ -281,7 +324,9 @@ export class ThreeContext implements IViewOptions {
         this.camera.aspect = canvasWidth / canvasHeight;
         this.camera.updateProjectionMatrix();
     
-        this.renderer.setSize( canvasWidth, canvasHeight );    
+        this.renderer.setSize( canvasWidth, canvasHeight );   
+        this.labelRenderer.setSize( canvasWidth, canvasHeight );
+ 
         this.render();    
     }       
     
@@ -292,6 +337,8 @@ export class ThreeContext implements IViewOptions {
         this.renderer.render( this.scene, this.camera );
         this.renderer.clearDepth();
         this.renderer.render( this.scene2D, this.camera );
+
+        this.labelRenderer.render(this.scene2D, this.camera);
     };
 };
 
