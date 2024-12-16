@@ -1,9 +1,10 @@
 import { ThreeContext } from "./three";
 import * as THREE from 'three';
+import { IViewOptions } from "./view-context";
 
 
 /** 
- * this implements the interactivity code taken from three-js examples
+ * this implements the interactivity code taken from three-js examples. Not currently used in this example
  */
 export class ThreeInteractiveContext extends ThreeContext {
 
@@ -22,8 +23,8 @@ export class ThreeInteractiveContext extends ThreeContext {
         super();
     };
 
-    init() {
-        super.init();
+    init(options: IViewOptions) {
+        super.init(options);
 
         const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
         this.rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
