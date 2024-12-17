@@ -60,6 +60,10 @@ export class ThreeContext implements IViewOptions {
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize( canvasWidth, canvasHeight );
         this.renderer.autoClear = false;
+        this.renderer.localClippingEnabled = true;
+        const localPlane = new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), 0.8 );
+
+        this.renderer.clippingPlanes = [localPlane ];
         container.appendChild( this.renderer.domElement );
 
         this.labelRenderer = new CSS2DRenderer();
@@ -157,9 +161,7 @@ export class ThreeContext implements IViewOptions {
         let dip = degreeToRad(90 - feature.dip);
 
         if(feature.type == 'plane') {
-            //TO DO: clip above stereonet?
-            let w = 2 * this.radius;
-            const geometry = new THREE.PlaneGeometry( w, w );
+            const geometry = new THREE.CircleGeometry( this.radius, 35 );
             const material = new THREE.MeshBasicMaterial({ color: 'rgb(30, 30, 240)', side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
             const plane = new THREE.Mesh( geometry, material );
 
@@ -173,7 +175,7 @@ export class ThreeContext implements IViewOptions {
             let w = this.radius;
             let points = [];
             let material = new THREE.LineBasicMaterial({ color: 'rgb(30, 30, 240)' });
-            points.push( new THREE.Vector3(0, w, 0));
+            points.push( new THREE.Vector3(0, 0, 0));
             points.push( new THREE.Vector3(0, -w, 0));
             let geometry = new THREE.BufferGeometry().setFromPoints( points );
             let line = new THREE.Line( geometry, material );
