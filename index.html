@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stereonet project</title>
+    <script type="module" crossorigin src="/assets/index-CVvvJK1h.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BoK3--VE.css">
+  </head>
+  <body>
+    <div id="app">
+
+      <h4>Stereonet visualiser</h4>
+
+      <div id="controls">
+        <div class="row">
+          <span>Type:</span>
+          <select name="feature" id="type" class="buffer" >
+            <option value="">--Choose a type--</option>
+            <option value="plane">Plane</option>
+            <option value="point">Point</option>
+          </select>
+
+          <span>Dip:</span>
+          <input placeholder="Enter value" name="name" id="dip" class="buffer" />
+
+          <span>Strike:</span>
+          <input placeholder="Enter value" name="name" id="strike" class="buffer" />
+
+          <button id="addFeature">Add Feature</button>
+        </div>
+
+        <div class="row">
+          <span>View:</span>
+          <div>
+            <input type="radio" id="3D" name="view" value="3D" checked class="radio" />
+            <label for="3D">3D</label>
+          </div>
+        
+          <div style="margin-right: 60px;">
+            <input type="radio" id="2D" name="view" value="2D" class="radio" />
+            <label for="2D">2D</label>
+          </div>
+
+          <span>Projection:</span>
+          <div>
+            <input type="radio" id="angle" name="projection" value="angle" checked class="radio" disabled="true" />
+            <label for="angle">Equal-angle</label>
+          </div>
+        
+          <div>
+            <input type="radio" id="area" name="projection" value="area" class="radio" disabled="true" />
+            <label for="area">Equal-area</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="three"></div>
+
+    </div>
+  </body>
+</html>
