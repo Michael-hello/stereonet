@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stereonet project</title>
-    <script type="module" crossorigin src="./assets/index-CVvvJK1h.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BoK3--VE.css">
+    <script type="module" crossorigin src="./assets/index-ClvrbtEy.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bgal9RA8.css">
   </head>
   <body>
     <div id="app">
@@ -22,10 +22,10 @@
           </select>
 
           <span>Dip:</span>
-          <input placeholder="Enter value" name="name" id="dip" class="buffer" />
+          <input placeholder="Enter value" name="name" id="dip" class="buffer" autocomplete="off" />
 
           <span>Strike:</span>
-          <input placeholder="Enter value" name="name" id="strike" class="buffer" />
+          <input placeholder="Enter value" name="name" id="strike" class="buffer" autocomplete="off" />
 
           <button id="addFeature">Add Feature</button>
         </div>
@@ -42,13 +42,16 @@
             <label for="2D">2D</label>
           </div>
 
-          <span>Projection:</span>
-          <div>
+          <button id="showTable">View table</button>
+          
+          <!-- HIDE projection options for now -->
+          <span class="hide">Projection:</span>
+          <div class="hide">
             <input type="radio" id="angle" name="projection" value="angle" checked class="radio" disabled="true" />
             <label for="angle">Equal-angle</label>
           </div>
         
-          <div>
+          <div class="hide">
             <input type="radio" id="area" name="projection" value="area" class="radio" disabled="true" />
             <label for="area">Equal-area</label>
           </div>
@@ -56,6 +59,29 @@
       </div>
 
       <div id="three"></div>
+
+
+      <div id="myModal" class="modal">
+         
+        <div class="modal-content">
+          <span id="closeModal">&times;</span>
+
+          <div class="modal-row header" style="height: 35px;">
+            <span>Dip</span>
+            <span>Strike</span>
+            <span>Type</span>
+            <span style="border: none; background-color: white;"></span>
+          </div> 
+
+          <div id="rowToCopy" class="modal-row" style="height: 35px;">
+            <span class="txt-bx box1"></span>
+            <span class="txt-bx box2"></span>
+            <span class="txt-bx box3"></span>
+            <button class="delete-btn">DELETE</button>
+          </div>          
+        </div>
+
+      </div>
 
     </div>
   </body>
