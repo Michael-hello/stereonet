@@ -1,3 +1,4 @@
+import { generateUUID } from "three/src/math/MathUtils.js";
 import { EventBus } from "./events";
 
 export class ViewContext implements IViewOptions {
@@ -7,12 +8,15 @@ export class ViewContext implements IViewOptions {
 
     private _view: '2D' | '3D';
     private _projection: 'equal-angle' | 'equal-area';
-    private features: IFeature[] = [];
+    public features: IFeature[] = [];
 
     constructor(public bus: EventBus) {}
 
-    init(element: HTMLButtonElement, options: IViewOptions) {
-        element.addEventListener('click', this.addFeature.bind(this));
+    init(addFeatureBtn: HTMLButtonElement, showModalBtn: HTMLButtonElement, options: IViewOptions) {
+        
+        addFeatureBtn.addEventListener('click', this.addFeature.bind(this));
+        showModalBtn.addEventListener('click', this.showModal.bind(this));
+
         this._view = options.view;
         this._projection = options.projection;
 
@@ -45,6 +49,8 @@ export class ViewContext implements IViewOptions {
         if(type == '' || rawDip == '' || rawStrike == '') return;
         if(!(type == 'plane' || type == 'point')) return;
 
+        if(rawDip.length > 2 || rawStrike.length > 3) return;
+
         let dip = Number(rawDip);
         let strike = Number(rawStrike);
 
@@ -55,10 +61,65 @@ export class ViewContext implements IViewOptions {
         while( strike > 360 ) strike -= 360;
         while( strike < 0 ) strike += 360;
 
-        let feature: IFeature = { type, dip, strike };
+        let feature: IFeature = { type, dip, strike, id: generateUUID() };
         this.features.push(feature);
 
         this.bus.publish('new-feature', feature);
+    };
+
+    private removeFeature(id: string) : boolean {
+
+      let removed = false;
+      let index = this.features.findIndex(x => x.id == id);
+
+      if(index >= 0) {                    
+        this.features.splice(index, 1);
+        removed = true;
+        this.bus.publish('delete-feature', id);
+      };
+
+      return removed;
+    };
+
+    private showModal() {
+
+        let toCopy = document.getElementById("rowToCopy");
+        let span = document.getElementById("closeModal");
+        let modal = document.getElementById("myModal");
+        modal.style.display = "block";  
+        toCopy.style.display = '';          
+
+        span.onclick = () => modal.style.display = "none";
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+
+        for(let dip of this.features) {
+            /** prevent duplication */
+            let ele = document.getElementById(dip.id);
+            if(ele != null) continue;
+
+            let copy = toCopy.cloneNode(true) as HTMLElement;
+            copy.setAttribute('id', dip.id);
+
+            (copy.childNodes[1] as HTMLSpanElement).textContent = dip.dip.toFixed(0);
+            (copy.childNodes[3] as HTMLSpanElement).textContent = dip.strike.toFixed(0);
+            (copy.childNodes[5] as HTMLSpanElement).textContent = dip.type;
+            (copy.childNodes[7] as HTMLButtonElement).onclick = () => {
+                let removed = this.removeFeature(dip.id);
+                if(removed) {
+                    let ele = document.getElementById(dip.id);
+                    ele.style.display = 'none';
+                };
+            };
+            
+            toCopy.insertAdjacentElement('beforebegin', copy);
+        };
+
+        toCopy.style.display = 'none';        
     };
 
     private radioInputChange(e: Event){
@@ -83,6 +144,7 @@ export class ViewContext implements IViewOptions {
 
 
 export interface IFeature {
+    id: string; //uuid
     type: 'plane' | 'point';
     dip: number; //degrees
     strike: number; //strike defined by RH rule //degrees

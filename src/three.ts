@@ -25,9 +25,11 @@ export class ThreeContext implements IViewOptions {
 
     get view() { return this._view }
     get projection() { return this._projection }
+    get options(){ return this._options }
 
     private _view: '2D' | '3D';
     private _projection: 'equal-angle' | 'equal-area';
+    private _options: IViewOptions = null;
 
     constructor(){}
 
@@ -97,6 +99,27 @@ export class ThreeContext implements IViewOptions {
         this.add3DFeature(feature);
     };
 
+    public removeFeature(id: string) {
+
+      let index = this.features.findIndex(x => x.id == id);
+      if(index == -1) return;                    
+    
+      this.features.splice(index, 1);
+      this.scene.remove(this.features3D);
+      this.scene2D.remove(this.features2D);
+
+      this.features3D = new THREE.Group();
+      this.features2D = new THREE.Group();
+
+      for(let feature of this.features) {
+        this.add2DFeature(feature);
+        this.add3DFeature(feature);
+      };  
+
+      this.updateView(this.options);
+
+    };
+
     private add2DFeature(feature: IFeature) {
 
         let material = new THREE.LineBasicMaterial({ color: 'rgb(30, 30, 240)', transparent: false });
@@ -117,6 +140,7 @@ export class ThreeContext implements IViewOptions {
             };
             let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
             let semi = new THREE.Line( lineGeo, material );
+            semi.uuid = feature.id;
             semi.rotateY(azim);
             semi.rotateZ(-dip);
 
@@ -189,6 +213,7 @@ export class ThreeContext implements IViewOptions {
     //TO DO: add support for different projections
     public updateView(options: IViewOptions) {
 
+        this._options = options;
         this._view = options.view;
         this._projection = options.projection;
 
