@@ -355,15 +355,18 @@ export class ThreeContext implements IViewOptions {
     }
     
     private onWindowResize() {  
-        console.log('resizingggg', this.radius)
-        let container = document.getElementById('three') as HTMLDivElement;
+                let container = document.getElementById('three') as HTMLDivElement;
         let canvasWidth = container.clientWidth;
         let canvasHeight = container.clientHeight;
+
+        this.camera.aspect = canvasWidth / canvasHeight;
+        this.camera.updateProjectionMatrix();
+    
+        this.renderer.setSize( canvasWidth, canvasHeight );   
+        this.labelRenderer.setSize( canvasWidth, canvasHeight );
  
         this.render();    
     }  
-    
-
     
     render() {  
         /** below code allows objects inside scene2D to be rendered on top, see:
