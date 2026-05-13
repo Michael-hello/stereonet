@@ -19,6 +19,13 @@
   grid-template-rows: 1fr 1fr;
 }
 
+#mobile-controls {
+  padding-top: 10px;
+  width: 100%;
+  height: 100%;
+  margin: 0px auto;
+}
+
 .row {
   margin-top: 15px;
   display: flex;
@@ -150,5 +157,31 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+
+/** this is for mobile / tablet tailored UI **/
+@media (max-width: 780px) {
+  #controls {
+    display: none;
+  }
+  #mobile-controls {
+    display: block;
+  }
+  #app{
+    grid-template-rows: 50px 50px 3fr;
+  }
+}
+
+@media (min-width: 781px) {
+  #controls {
+    display: block;
+  }
+  #mobile-controls {
+    display: none;
+  }
+  #app{
+    grid-template-rows: 70px 120px 3fr;
   }
 }

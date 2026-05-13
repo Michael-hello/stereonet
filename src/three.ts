@@ -217,10 +217,20 @@ export class ThreeContext implements IViewOptions {
         this._view = options.view;
         this._projection = options.projection;
 
+
         if( this.view == '2D' ) {            
             this.cameraControls.enabled = false;
-            let h  = (this.radius * 1.25) / Math.tan(degreeToRad(this.camera.fov / 2));
-            this.camera.position.set( 0, h, 0 );
+            let container = document.getElementById('three') as HTMLDivElement;
+            let canvasWidth = container.clientWidth;
+            let y = 270;
+            if(canvasWidth < 750) y = 400;
+            if(canvasWidth < 650) y = 500;
+            if(canvasWidth < 550) y = 600;
+            if(canvasWidth < 450) y = 700;
+
+            console.log(canvasWidth, y)
+            // let y  = (this.radius * 1.25) / Math.tan(degreeToRad(this.camera.fov / 2));
+            this.camera.position.set( 0, y, 0 );
             this.camera.lookAt( 0, 0, 0 );
             this.scene2D.add(this.features2D);
             this.scene.remove(this.features3D);
@@ -234,6 +244,7 @@ export class ThreeContext implements IViewOptions {
             this.scene2D.remove(this.features2D);
         };
 
+        this.camera.updateProjectionMatrix();
         this.updateText();
         this.render();
     };
@@ -344,18 +355,15 @@ export class ThreeContext implements IViewOptions {
     }
     
     private onWindowResize() {  
+        console.log('resizingggg', this.radius)
         let container = document.getElementById('three') as HTMLDivElement;
         let canvasWidth = container.clientWidth;
         let canvasHeight = container.clientHeight;
-
-        this.camera.aspect = canvasWidth / canvasHeight;
-        this.camera.updateProjectionMatrix();
-    
-        this.renderer.setSize( canvasWidth, canvasHeight );   
-        this.labelRenderer.setSize( canvasWidth, canvasHeight );
  
         this.render();    
-    }       
+    }  
+    
+
     
     render() {  
         /** below code allows objects inside scene2D to be rendered on top, see:

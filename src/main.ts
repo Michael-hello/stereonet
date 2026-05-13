@@ -5,7 +5,6 @@ import { ThreeContext } from './three';
 import { IFeature, IViewOptions, ViewContext } from './view-context';
 import { generateUUID } from 'three/src/math/MathUtils.js';
 
-
 const bus = new EventBus();
 const viewCtx = new ViewContext(bus);
 const threeCtx = new ThreeContext();
@@ -29,6 +28,7 @@ bus.subscribe('delete-feature', (id: string) => {
 bus.subscribe('view-change', (x: IViewOptions) => {
     threeCtx.updateView(x);
 });
+
 
 // adds some example data
 const examples: IFeature[] = [
