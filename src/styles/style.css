@@ -24,6 +24,8 @@
   width: 100%;
   height: 100%;
   margin: 0px auto;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
 }
 
 .row {
@@ -167,16 +169,16 @@ button:focus-visible {
     display: none;
   }
   #mobile-controls {
-    display: block;
+    display: grid;
   }
   #app{
-    grid-template-rows: 50px 50px 3fr;
+    grid-template-rows: 50px 75px 3fr;
   }
 }
 
 @media (min-width: 781px) {
   #controls {
-    display: block;
+    display: grid;
   }
   #mobile-controls {
     display: none;

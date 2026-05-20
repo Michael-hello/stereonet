@@ -311,19 +311,20 @@ export class ThreeContext implements IViewOptions {
         };
 
         //add main circle
-        let points = [];
+        //removed for now due to mobile display issues
+        // let points = [];
  
-         for(let i = 0; i <= count; i++) {
-             let theta = i * ((2*Math.PI) / count);
-             let y =  -radius * Math.cos(theta);
-             let x = radius * Math.sin(theta);
-             points.push( new THREE.Vector3( x, 0, y ) );
-         };
+        //  for(let i = 0; i <= count; i++) {
+        //      let theta = i * ((2*Math.PI) / count);
+        //      let y =  -radius * Math.cos(theta);
+        //      let x = radius * Math.sin(theta);
+        //      points.push( new THREE.Vector3( x, 0, y ) );
+        //  };
  
-         let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
-         let circle = new THREE.Line( lineGeo, thickLineMat );
-         circle.translateY(0.1);
-         this.scene.add(circle);       
+        //  let lineGeo = new THREE.BufferGeometry().setFromPoints( points );
+        //  let circle = new THREE.Line( lineGeo, thickLineMat );
+        //  circle.translateY(0.1);
+        //  this.scene.add(circle);       
     };
 
     private updateText() {

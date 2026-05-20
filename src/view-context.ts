@@ -22,16 +22,22 @@ export class ViewContext implements IViewOptions {
 
         const input3D = document.getElementById("3D") as HTMLInputElement;
         const input2D = document.getElementById("2D") as HTMLInputElement;
+        const input3D_2 = document.getElementById("3D_2") as HTMLInputElement;
+        const input2D_2 = document.getElementById("2D_2") as HTMLInputElement;
         const inputAngle = document.getElementById("angle") as HTMLInputElement;
         const inputArea = document.getElementById("area") as HTMLInputElement;
 
         input3D.checked = options.view == '3D';
         input2D.checked = options.view == '2D';
+        input3D_2.checked = options.view == '3D';
+        input2D_2.checked = options.view == '2D';
         inputAngle.checked = options.projection == 'equal-angle';
         inputArea.checked = options.projection == 'equal-area';
 
         input3D.addEventListener('change', this.radioInputChange.bind(this));
         input2D.addEventListener('change', this.radioInputChange.bind(this));
+        input3D_2.addEventListener('change', this.radioInputChange.bind(this));
+        input2D_2.addEventListener('change', this.radioInputChange.bind(this));
         inputAngle.addEventListener('change', this.radioInputChange.bind(this));
         inputArea.addEventListener('change', this.radioInputChange.bind(this)); 
     };
@@ -123,6 +129,7 @@ export class ViewContext implements IViewOptions {
     };
 
     private radioInputChange(e: Event){
+        console.log(e)
         let target = e.target as HTMLInputElement;
         if( target == null ) return;
 
@@ -134,8 +141,8 @@ export class ViewContext implements IViewOptions {
 
         if(name == 'projection' && id == 'angle' && checked) this._projection = 'equal-angle';
         if(name == 'projection' && id == 'area' && checked) this._projection = 'equal-area'
-        if(name == 'view' && id == '3D' && checked) this._view = '3D';
-        if(name == 'view' && id == '2D' && checked) this._view = '2D';
+        if(name == 'view' && (id == '3D' || id == '3D_2') && checked) this._view = '3D';
+        if(name == 'view' && (id == '2D' || id == '2D_2') && checked) this._view = '2D';
 
         this.bus.publish('view-change', { view: this.view, projection: this.projection })
     };

@@ -10,7 +10,7 @@ const viewCtx = new ViewContext(bus);
 const threeCtx = new ThreeContext();
 const addFeatBtn = document.querySelector<HTMLButtonElement>('#addFeature');
 const showModalBtn = document.querySelector<HTMLButtonElement>('#showTable');
-const options: IViewOptions = { view: '2D', projection: 'equal-angle' };
+const options: IViewOptions = { view: '3D', projection: 'equal-angle' };
 
 /** setup */
 viewCtx.init(addFeatBtn, showModalBtn, options);
